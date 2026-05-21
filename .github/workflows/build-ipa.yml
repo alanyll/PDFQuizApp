@@ -25,12 +25,8 @@ jobs:
         run: |
           set -ex
           xcodegen generate
-          echo "=== Generated project structure ==="
-          find PDFQuizApp.xcodeproj -type f
-          echo "=== pbxproj first 100 lines ==="
-          head -100 PDFQuizApp.xcodeproj/project.pbxproj | grep -v '^$'
 
-      - name: Build (test compilation)
+      - name: Build app
         run: |
           set -ex
           xcodebuild build \
@@ -39,59 +35,32 @@ jobs:
             -configuration Release \
             -sdk iphoneos \
             -destination "generic/platform=iOS" \
+            -derivedDataPath .build \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
             DEVELOPMENT_TEAM="" \
             PROVISIONING_PROFILE="" \
-            2>&1 | tail -80
+            2>&1 | tail -30
 
-      - name: Archive
+      - name: Find .app and package IPA
         run: |
           set -ex
-          xcodebuild archive \
-            -project PDFQuizApp.xcodeproj \
-            -scheme PDFQuizApp \
-            -configuration Release \
-            -sdk iphoneos \
-            -destination "generic/platform=iOS" \
-            -archivePath Archive.xcarchive \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO \
-            DEVELOPMENT_TEAM="" \
-            PROVISIONING_PROFILE=""
-          echo "=== Archive contents ==="
-          ls -la Archive.xcarchive/
+          # Find the built .app
+          APP_PATH=$(find .build -name "*.app" -type d | head -1)
+          echo "App found at: $APP_PATH"
+          ls -la "$APP_PATH"
 
-      - name: Export IPA
-        if: success()
-        run: |
-          set -ex
-          cat > exportOptions.plist << 'EOF'
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>method</key>
-              <string>development</string>
-              <key>compileBitcode</key>
-              <false/>
-              <key>signingStyle</key>
-              <string>manual</string>
-          </dict>
-          </plist>
-          EOF
-          xcodebuild -exportArchive \
-            -archivePath Archive.xcarchive \
-            -exportOptionsPlist exportOptions.plist \
-            -exportPath Export
-          ls -la Export/
+          # Create Payload folder and package as IPA
+          mkdir -p Payload
+          cp -R "$APP_PATH" Payload/
+          zip -r PDFQuizApp.ipa Payload/
+          ls -la PDFQuizApp.ipa
 
       - name: Upload IPA
         if: success()
         uses: actions/upload-artifact@v4
         with:
           name: PDFQuizApp.ipa
-          path: Export/*.ipa
+          path: PDFQuizApp.ipa
           retention-days: 7
