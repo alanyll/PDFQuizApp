@@ -3,11 +3,9 @@ options:
   bundleIdPrefix: com.pdfquiz
   deploymentTarget:
     iOS: "16.0"
-  xcodeVersion: "15.0"
 
 settings:
   base:
-    GENERATE_INFOPLIST_FILE: YES
     SWIFT_VERSION: "5.9"
 
 targets:
@@ -18,18 +16,14 @@ targets:
       - path: PDFQuizApp
     settings:
       base:
-        INFOPLIST_FILE: PDFQuizApp/Info.plist
         PRODUCT_BUNDLE_IDENTIFIER: com.pdfquiz.app
-        PRODUCT_NAME: "PDF答题助手"
+        PRODUCT_NAME: "PDFQuizApp"
+        INFOPLIST_FILE: PDFQuizApp/Info.plist
+        CODE_SIGN_STYLE: Manual
+        CODE_SIGN_IDENTITY: ""
         DEVELOPMENT_TEAM: ""
+        PROVISIONING_PROFILE: ""
     dependencies: []
-    preBuildScripts:
-      - name: "SwiftLint"
-        script: |
-          if which swiftlint > /dev/null; then
-            swiftlint
-          fi
-        basedOnDependencyAnalysis: false
 
   PDFQuizAppTests:
     type: bundle.unit-test
@@ -41,3 +35,4 @@ targets:
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pdfquiz.app.tests
+        INFOPLIST_FILE: PDFQuizApp/Info.plist

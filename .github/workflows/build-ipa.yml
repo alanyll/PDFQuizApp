@@ -3,7 +3,7 @@ name: Build iOS IPA
 on:
   push:
     branches: [main]
-  workflow_dispatch:  # 允许手动触发
+  workflow_dispatch:
 
 jobs:
   build:
@@ -13,17 +13,33 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+      - name: Show Xcode versions
+        run: |
+          ls -d /Applications/Xcode*.app 2>/dev/null || true
+          xcodebuild -version
+          xcrun --sdk iphoneos --show-sdk-path 2>/dev/null || true
 
       - name: Install xcodegen
         run: brew install xcodegen
 
       - name: Generate Xcode project
-        run: xcodegen generate
+        run: |
+          set -ex
+          xcodegen generate
+          ls -la PDFQuizApp.xcodeproj/
+
+      - name: Show build settings (debug)
+        run: |
+          set -ex
+          xcodebuild -project PDFQuizApp.xcodeproj \
+            -scheme PDFQuizApp \
+            -showBuildSettings \
+            -destination "generic/platform=iOS" \
+            2>&1 | head -50
 
       - name: Archive (unsigned)
         run: |
+          set -ex
           xcodebuild archive \
             -project PDFQuizApp.xcodeproj \
             -scheme PDFQuizApp \
@@ -38,7 +54,9 @@ jobs:
             PROVISIONING_PROFILE=""
 
       - name: Export IPA (unsigned)
+        if: success()
         run: |
+          set -ex
           cat > exportOptions.plist << 'EOF'
           <?xml version="1.0" encoding="UTF-8"?>
           <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
@@ -64,7 +82,10 @@ jobs:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO
 
+          ls -la Export/
+
       - name: Upload IPA
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: PDFQuizApp.ipa
