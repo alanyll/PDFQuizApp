@@ -46,8 +46,24 @@ jobs:
       - name: Find .app and package IPA
         run: |
           set -ex
-          # Find the built .app
-          APP_PATH=$(find .build -name "*.app" -type d | head -1)
+          # List build directory for debugging
+          echo "=== Derived data structure ==="
+          find .build -maxdepth 5 -type d 2>/dev/null || true
+
+          # The .app is typically in .build/Build/Products/Release-iphoneos/
+          APP_PATH=".build/Build/Products/Release-iphoneos/PDFQuizApp.app"
+          if [ ! -d "$APP_PATH" ]; then
+            APP_PATH=$(find .build -name "*.app" -type d -not -path "*.dSYM*" | head -1)
+          fi
+
+          if [ -z "$APP_PATH" ] || [ ! -d "$APP_PATH" ]; then
+            echo "ERROR: .app not found!"
+            echo "Searching..."
+            find .build -name "*.app" -type d 2>/dev/null
+            find .build -name "PDFQuizApp" -type f 2>/dev/null
+            exit 1
+          fi
+
           echo "App found at: $APP_PATH"
           ls -la "$APP_PATH"
 
@@ -55,7 +71,7 @@ jobs:
           mkdir -p Payload
           cp -R "$APP_PATH" Payload/
           zip -r PDFQuizApp.ipa Payload/
-          ls -la PDFQuizApp.ipa
+          echo "IPA size: $(du -sh PDFQuizApp.ipa | cut -f1)"
 
       - name: Upload IPA
         if: success()
