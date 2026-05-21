@@ -1,0 +1,8 @@
+build-logs.zip
+logs_raw.zip
+create-repo.json
+.build/
+Archive.xcarchive/
+Export/
+IPA/
+logs/
