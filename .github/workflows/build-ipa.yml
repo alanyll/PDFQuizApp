@@ -13,11 +13,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Show Xcode versions
+      - name: Show Xcode info
         run: |
-          ls -d /Applications/Xcode*.app 2>/dev/null || true
           xcodebuild -version
-          xcrun --sdk iphoneos --show-sdk-path 2>/dev/null || true
+          ls -d /Applications/Xcode*.app 2>/dev/null || true
 
       - name: Install xcodegen
         run: brew install xcodegen
@@ -26,34 +25,46 @@ jobs:
         run: |
           set -ex
           xcodegen generate
-          ls -la PDFQuizApp.xcodeproj/
+          echo "=== Generated project structure ==="
+          find PDFQuizApp.xcodeproj -type f
+          echo "=== pbxproj first 100 lines ==="
+          head -100 PDFQuizApp.xcodeproj/project.pbxproj | grep -v '^$'
 
-      - name: Show build settings (debug)
+      - name: Build (test compilation)
         run: |
           set -ex
-          xcodebuild -project PDFQuizApp.xcodeproj \
+          xcodebuild build \
+            -project PDFQuizApp.xcodeproj \
             -scheme PDFQuizApp \
-            -showBuildSettings \
+            -configuration Release \
+            -sdk iphoneos \
             -destination "generic/platform=iOS" \
-            2>&1 | head -50
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_ALLOWED=NO \
+            DEVELOPMENT_TEAM="" \
+            PROVISIONING_PROFILE="" \
+            2>&1 | tail -80
 
-      - name: Archive (unsigned)
+      - name: Archive
         run: |
           set -ex
           xcodebuild archive \
             -project PDFQuizApp.xcodeproj \
             -scheme PDFQuizApp \
             -configuration Release \
+            -sdk iphoneos \
             -destination "generic/platform=iOS" \
-            -derivedDataPath .build \
             -archivePath Archive.xcarchive \
             CODE_SIGN_IDENTITY="" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \
             DEVELOPMENT_TEAM="" \
             PROVISIONING_PROFILE=""
+          echo "=== Archive contents ==="
+          ls -la Archive.xcarchive/
 
-      - name: Export IPA (unsigned)
+      - name: Export IPA
         if: success()
         run: |
           set -ex
@@ -64,8 +75,6 @@ jobs:
           <dict>
               <key>method</key>
               <string>development</string>
-              <key>teamID</key>
-              <string></string>
               <key>compileBitcode</key>
               <false/>
               <key>signingStyle</key>
@@ -73,15 +82,10 @@ jobs:
           </dict>
           </plist>
           EOF
-
           xcodebuild -exportArchive \
             -archivePath Archive.xcarchive \
             -exportOptionsPlist exportOptions.plist \
-            -exportPath Export \
-            CODE_SIGN_IDENTITY="" \
-            CODE_SIGNING_REQUIRED=NO \
-            CODE_SIGNING_ALLOWED=NO
-
+            -exportPath Export
           ls -la Export/
 
       - name: Upload IPA

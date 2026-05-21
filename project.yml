@@ -1,12 +1,8 @@
 name: PDFQuizApp
 options:
-  bundleIdPrefix: com.pdfquiz
   deploymentTarget:
     iOS: "16.0"
-
-settings:
-  base:
-    SWIFT_VERSION: "5.9"
+  createIntermediateGroups: true
 
 targets:
   PDFQuizApp:
@@ -14,25 +10,14 @@ targets:
     platform: iOS
     sources:
       - path: PDFQuizApp
+        type: group
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.pdfquiz.app
-        PRODUCT_NAME: "PDFQuizApp"
-        INFOPLIST_FILE: PDFQuizApp/Info.plist
+        INFOPLIST_FILE: ""
+        GENERATE_INFOPLIST_FILE: YES
+        SWIFT_VERSION: "5.0"
         CODE_SIGN_STYLE: Manual
-        CODE_SIGN_IDENTITY: ""
         DEVELOPMENT_TEAM: ""
-        PROVISIONING_PROFILE: ""
-    dependencies: []
-
-  PDFQuizAppTests:
-    type: bundle.unit-test
-    platform: iOS
-    sources:
-      - path: PDFQuizAppTests
-    dependencies:
-      - target: PDFQuizApp
-    settings:
-      base:
-        PRODUCT_BUNDLE_IDENTIFIER: com.pdfquiz.app.tests
-        INFOPLIST_FILE: PDFQuizApp/Info.plist
+        CODE_SIGN_IDENTITY: ""
+        PROVISIONING_PROFILE_SPECIFIER: ""
