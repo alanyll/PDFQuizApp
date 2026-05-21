@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<model type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="22225" systemVersion="23F79" minimumToolsVersion="Automatic" sourceLanguage="Swift" userDefinedModelVersionIdentifier="">
+    <entity name="CDDocument" representedClassName="CDDocument" syncable="YES" codeGenerationType="classDefinition">
+        <attribute name="createdAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="fileName" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="importStatus" optional="YES" attributeType="String" defaultValueString="pending"/>
+        <attribute name="lastOpenedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="lastQuizzedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="pageCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="questionCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="relativePath" optional="YES" attributeType="String"/>
+        <attribute name="title" optional="YES" attributeType="String"/>
+        <relationship name="questions" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="CDQuestion" inverseName="document" inverseEntity="CDQuestion"/>
+        <relationship name="testSessions" optional="YES" toMany="YES" deletionRule="Nullify" destinationEntity="CDTestSession" inverseName="document" inverseEntity="CDTestSession"/>
+    </entity>
+    <entity name="CDOption" representedClassName="CDOption" syncable="YES" codeGenerationType="classDefinition">
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="label" optional="YES" attributeType="String"/>
+        <attribute name="orderIndex" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="text" optional="YES" attributeType="String"/>
+        <relationship name="question" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CDQuestion" inverseName="options" inverseEntity="CDQuestion"/>
+    </entity>
+    <entity name="CDQuestion" representedClassName="CDQuestion" syncable="YES" codeGenerationType="classDefinition">
+        <attribute name="correctAnswer" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[String]"/>
+        <attribute name="detectionConfidence" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="difficulty" optional="YES" attributeType="String" defaultValueString="medium"/>
+        <attribute name="explanation" optional="YES" attributeType="String"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="isManuallyEdited" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="orderIndex" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="pageNumber" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="questionText" optional="YES" attributeType="String"/>
+        <attribute name="sourceContext" optional="YES" attributeType="String"/>
+        <attribute name="type" optional="YES" attributeType="String" defaultValueString="singleChoice"/>
+        <relationship name="document" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CDDocument" inverseName="questions" inverseEntity="CDDocument"/>
+        <relationship name="options" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="CDOption" inverseName="question" inverseEntity="CDOption"/>
+        <relationship name="userAnswers" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="CDUserAnswer" inverseName="question" inverseEntity="CDUserAnswer"/>
+        <relationship name="wrongAnswerRecords" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="CDWrongAnswer" inverseName="question" inverseEntity="CDWrongAnswer"/>
+    </entity>
+    <entity name="CDTestSession" representedClassName="CDTestSession" syncable="YES" codeGenerationType="classDefinition">
+        <attribute name="answeredQuestions" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="completedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="correctCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="elapsedSeconds" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="incorrectCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="isTimedOut" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="scorePercentage" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="skippedCount" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="startedAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="timeLimitSeconds" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="totalQuestions" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="type" optional="YES" attributeType="String" defaultValueString="practice"/>
+        <relationship name="document" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CDDocument" inverseName="testSessions" inverseEntity="CDDocument"/>
+        <relationship name="userAnswers" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="CDUserAnswer" inverseName="session" inverseEntity="CDUserAnswer"/>
+    </entity>
+    <entity name="CDUserAnswer" representedClassName="CDUserAnswer" syncable="YES" codeGenerationType="classDefinition">
+        <attribute name="answeredAt" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="isCorrect" optional="YES" attributeType="Boolean" defaultValueString="NO" usesScalarValueType="YES"/>
+        <attribute name="selectedAnswer" optional="YES" attributeType="Transformable" valueTransformerName="NSSecureUnarchiveFromData" customClassName="[String]"/>
+        <attribute name="timeSpentSeconds" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <relationship name="question" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CDQuestion" inverseName="userAnswers" inverseEntity="CDQuestion"/>
+        <relationship name="session" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CDTestSession" inverseName="userAnswers" inverseEntity="CDTestSession"/>
+    </entity>
+    <entity name="CDWrongAnswer" representedClassName="CDWrongAnswer" syncable="YES" codeGenerationType="classDefinition">
+        <attribute name="correctCountSinceLastWrong" optional="YES" attributeType="Integer 16" defaultValueString="0" usesScalarValueType="YES"/>
+        <attribute name="firstWrongDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
+        <attribute name="lastReviewDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="lastWrongDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="masteryStatus" optional="YES" attributeType="String" defaultValueString="new"/>
+        <attribute name="nextReviewDate" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
+        <attribute name="reviewIntervalDays" optional="YES" attributeType="Integer 16" defaultValueString="1" usesScalarValueType="YES"/>
+        <attribute name="wrongCountTotal" optional="YES" attributeType="Integer 16" defaultValueString="1" usesScalarValueType="YES"/>
+        <relationship name="question" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="CDQuestion" inverseName="wrongAnswerRecords" inverseEntity="CDQuestion"/>
+    </entity>
+</model>
